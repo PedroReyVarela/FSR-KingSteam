@@ -1,0 +1,45 @@
+{
+  "name": "fsr-kingsteam",
+  "version": "2.0.0",
+  "description": "Installs OptiScaler and applies FSR 4 (INT8 Lite) or XeSS to Steam and non-Steam games.",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "test": "PYTHONPATH=tests python3 -m unittest discover -s tests -v"
+  },
+  "keywords": [
+    "decky",
+    "plugin",
+    "FSR",
+    "FSR4",
+    "OptiScaler",
+    "upscaling"
+  ],
+  "author": "FSR-KingSteam",
+  "license": "MIT",
+  "devDependencies": {
+    "@decky/rollup": "^1.0.1",
+    "@decky/ui": "^4.7.2",
+    "@rollup/rollup-linux-x64-musl": "^4.22.5",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@types/react-router": "5.1.18",
+    "@types/webpack": "^5.28.5",
+    "rollup": "^4.22.5",
+    "typescript": "^5.6.2"
+  },
+  "dependencies": {
+    "@decky/api": "^1.1.2",
+    "react-icons": "^5.3.0",
+    "tslib": "^2.7.0"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "react",
+        "react-dom"
+      ]
+    }
+  }
+}

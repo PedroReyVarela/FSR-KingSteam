@@ -1,0 +1,10 @@
+{
+  "name": "FSR-KingSteam",
+  "author": "FSR-KingSteam",
+  "flags": [],
+  "api_version": 1,
+  "publish": {
+    "tags": ["FSR", "FSR4", "upscaling", "OptiScaler"],
+    "description": "Installs OptiScaler and applies FSR 4 (INT8 Lite) or XeSS to Steam and non-Steam games, handling launch options for you."
+  }
+}
