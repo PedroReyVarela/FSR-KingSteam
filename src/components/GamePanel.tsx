@@ -197,8 +197,8 @@ export function GamePanel({ info, proxy }: Props) {
       <PanelSection>
         <PanelSectionRow><Heading>{tr("Game", "Juego")}</Heading></PanelSectionRow>
         <PanelSectionRow>
-          <Tile onActivate={openMenu} disabled={loading || items.length === 0} style={{ textAlign: "left", padding: "12px 14px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Tile left onActivate={openMenu} disabled={loading || items.length === 0} style={{ padding: "12px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.25, wordBreak: "break-word" }}>
                   {current ? current.name : loading ? tr("Loading games...", "Cargando juegos...") : tr("Pick a game", "Elige un juego")}
@@ -251,11 +251,11 @@ export function GamePanel({ info, proxy }: Props) {
 
         <PanelSectionRow>
           <div style={{ display: "flex", gap: 8, width: "100%" }}>
-            <Tile disabled={busy !== null} onActivate={() => void addExe()} style={{ flex: 3, fontSize: 13 }}>
-              <IconText icon={<FaPlus />}>{busy === "add" ? tr("Adding...", "Añadiendo...") : tr("Add a game .exe", "Añadir .exe de un juego")}</IconText>
+            <Tile disabled={busy !== null} onActivate={() => void addExe()} style={{ flex: 3, fontSize: 13, whiteSpace: "nowrap" }}>
+              <IconText icon={<FaPlus />}>{busy === "add" ? tr("Adding...", "Añadiendo...") : tr("Add game .exe", "Añadir .exe")}</IconText>
             </Tile>
             <Tile disabled={busy !== null || loading} onActivate={() => void loadItems(selected)} style={{ flex: 1 }}>
-              <IconText icon={<FaSync />}>{""}</IconText>
+              <FaSync />
             </Tile>
           </div>
         </PanelSectionRow>
@@ -287,11 +287,11 @@ export function GamePanel({ info, proxy }: Props) {
           )}
           <PanelSectionRow>
             {patched ? (
-              <div style={{ display: "flex", gap: 8, width: "100%" }}>
-                <Tile tone="ghost" disabled={!canPatch} onActivate={() => void doPatch()} style={{ flex: 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}>
+                <Tile tone="ghost" disabled={!canPatch} onActivate={() => void doPatch()}>
                   <IconText icon={<FaCheck />}>{patchLabel}</IconText>
                 </Tile>
-                <Tile tone="danger" disabled={busy !== null} onActivate={() => void doUnpatch()} style={{ flex: 1 }}>
+                <Tile tone="danger" disabled={busy !== null} onActivate={() => void doUnpatch()}>
                   <IconText icon={<FaTimes />}>{busy === "unpatch" ? tr("Removing...", "Quitando...") : tr("Remove patch", "Quitar parche")}</IconText>
                 </Tile>
               </div>

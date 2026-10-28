@@ -44,14 +44,17 @@ export function ModelPicker({ variants, current, disabled, recommended, onSelect
   };
 
   return (
-    <Tile selected disabled={disabled} onActivate={open} style={{ textAlign: "left", padding: "10px 12px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <Tile selected disabled={disabled} onActivate={open} left style={{ padding: "10px 12px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontSize: 13.5, fontWeight: 700 }}>{chosen?.title ?? tr("Custom", "Personalizado")}</span>
             {chosen?.id === recommended && <Chip color={COLORS.ok}>{tr("Recommended", "Recomendado")}</Chip>}
           </div>
-          {chosen && <div style={{ fontSize: 11.5, color: "#98a1ad", marginTop: 2, lineHeight: 1.35, fontWeight: 400 }}>{chosen.hint}</div>}
+          {chosen && (
+            <div style={{ fontSize: 11.5, color: "#98a1ad", marginTop: 2, lineHeight: 1.35, fontWeight: 400, display: "-webkit-box",
+              WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{chosen.hint}</div>
+          )}
           <div style={{ fontSize: 11, color: COLORS.info, marginTop: 5, fontWeight: 600 }}>{tr("Tap to see other models", "Pulsa para ver otros modelos")}</div>
         </div>
         <FaChevronDown style={{ opacity: 0.7, flex: "0 0 auto" }} />

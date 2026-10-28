@@ -55,8 +55,8 @@ const TONES: Record<Tone, CSSProperties> = {
 };
 
 // A gamepad-focusable tile: big tap target, own focus ring, works with touch and with the A button
-export function Tile({ onActivate, children, tone = "plain", selected, disabled, style }: {
-  onActivate: () => void; children: ReactNode; tone?: Tone; selected?: boolean; disabled?: boolean; style?: CSSProperties;
+export function Tile({ onActivate, children, tone = "plain", selected, disabled, left, style }: {
+  onActivate: () => void; children: ReactNode; tone?: Tone; selected?: boolean; disabled?: boolean; left?: boolean; style?: CSSProperties;
 }) {
   const [focused, setFocused] = useState(false);
   const last = useRef(0);
@@ -75,12 +75,15 @@ export function Tile({ onActivate, children, tone = "plain", selected, disabled,
       onBlur={() => setFocused(false)}
       style={{
         ...TONES[tone], boxSizing: "border-box", width: "100%", borderRadius: 10, padding: "11px 14px", fontSize: 14,
-        textAlign: "center", opacity: disabled ? 0.45 : 1, transition: "box-shadow .12s, transform .12s",
+        display: "flex", alignItems: "center", justifyContent: left ? "flex-start" : "center",
+        textAlign: left ? "left" : "center", opacity: disabled ? 0.45 : 1, transition: "box-shadow .12s, transform .12s",
         ...(selected ? { border: `1px solid ${COLORS.info}`, background: "#14263a" } : null),
         ...(focused ? { boxShadow: "0 0 0 3px #ffffff", transform: "scale(1.015)" } : null),
         ...style,
       }}
-    >{children}</Focusable>
+    >
+      <div style={{ width: "100%", minWidth: 0, display: "flex", alignItems: "center", justifyContent: left ? "flex-start" : "center" }}>{children}</div>
+    </Focusable>
   );
 }
 
