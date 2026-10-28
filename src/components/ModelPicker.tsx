@@ -1,18 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
-import { DropdownItem } from "@decky/ui";
+import { useEffect, useState } from "react";
+import { FaCheck } from "react-icons/fa";
 import { Community, communityList, Variant } from "../api";
 import { tr } from "../i18n";
+import { Chip, COLORS, Tile } from "../ui";
 
 type Props = {
   variants: Variant[];
   current?: string | null;
-  currentLabel?: string | null;
-  label?: string;
   disabled?: boolean;
+  recommended?: string;
   onSelect: (variant: string) => void;
 };
 
-export function ModelPicker({ variants, current, currentLabel, label, disabled, onSelect }: Props) {
+// every model is a card you can see at once: title, one line of help, and a check on the chosen one
+export function ModelPicker({ variants, current, disabled, recommended, onSelect }: Props) {
   const [community, setCommunity] = useState<Community[]>([]);
 
   useEffect(() => {
@@ -23,29 +24,33 @@ export function ModelPicker({ variants, current, currentLabel, label, disabled, 
     return () => { cancelled = true; };
   }, []);
 
-  const options = useMemo(() => [
-    ...variants.map((v) => ({ data: v.id, label: v.label })),
-    ...community.map((c) => ({ data: `community:${c.id}`, label: `${tr("Community", "Comunidad")}: ${c.name}` })),
-  ], [variants, community]);
-
-  const description = useMemo(() => {
-    const official = variants.find((v) => v.id === current);
-    if (official) return official.hint;
-    const entry = community.find((c) => `community:${c.id}` === current);
-    return entry ? `${entry.note} SHA-256 ${entry.sha256.slice(0, 16)}…`.trim() : undefined;
-  }, [community, current, variants]);
+  const entries = [
+    ...variants.map((v) => ({ id: v.id, title: v.label, hint: v.hint })),
+    ...community.map((c) => ({ id: `community:${c.id}`, title: c.name, hint: `${c.note} SHA-256 ${c.sha256.slice(0, 12)}…`.trim() })),
+  ];
 
   return (
-    <DropdownItem
-      layout="below"
-      label={label ?? tr("Upscaler / model for this game", "Escalador / modelo de este juego")}
-      description={description}
-      menuLabel={tr("FSR4 model", "Modelo FSR4")}
-      strDefaultLabel={currentLabel || tr("Custom", "Personalizado")}
-      disabled={disabled}
-      selectedOption={current ?? undefined}
-      rgOptions={options}
-      onChange={(o) => onSelect(String(o.data))}
-    />
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%" }}>
+      {entries.map((entry) => {
+        const chosen = entry.id === current;
+        return (
+          <Tile key={entry.id} selected={chosen} disabled={disabled} onActivate={() => onSelect(entry.id)} style={{ textAlign: "left", padding: "9px 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{
+                flex: "0 0 18px", height: 18, borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center",
+                border: `2px solid ${chosen ? COLORS.info : "#4b5563"}`, background: chosen ? COLORS.info : "transparent", color: "#fff", fontSize: 10,
+              }}>{chosen ? <FaCheck /> : null}</span>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 13.5, fontWeight: 700 }}>{entry.title}</span>
+                  {entry.id === recommended && <Chip color={COLORS.ok}>{tr("Recommended", "Recomendado")}</Chip>}
+                </div>
+                <div style={{ fontSize: 11.5, color: "#98a1ad", marginTop: 2, lineHeight: 1.35, fontWeight: 400 }}>{entry.hint}</div>
+              </div>
+            </div>
+          </Tile>
+        );
+      })}
+    </div>
   );
 }

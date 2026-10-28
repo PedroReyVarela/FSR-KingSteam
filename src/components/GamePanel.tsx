@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ButtonItem, DropdownItem, Field, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
+import { Menu, MenuItem, PanelSection, PanelSectionRow, showContextMenu, ToggleField } from "@decky/ui";
 import { FileSelectionType, openFilePicker, toaster } from "@decky/api";
-import { FaCheck, FaExclamationTriangle, FaFolderOpen, FaPlus, FaSearch, FaSync, FaTimes } from "react-icons/fa";
+import { FaCheck, FaChevronDown, FaExclamationTriangle, FaFolderOpen, FaPlus, FaSearch, FaSync, FaTimes } from "react-icons/fa";
 import * as api from "../api";
 import { Kind, RuntimeInfo, TargetItem, TargetStatus } from "../api";
 import { tr } from "../i18n";
 import { dirname, getLaunchOptions, nameWithoutExtension, setLaunchOptions } from "../steam";
-import { Card, COLORS, errorText, IconText, Mono, Pill } from "../ui";
+import { Card, Chip, COLORS, errorText, Heading, IconText, Mono, Pill, Tile } from "../ui";
 import { ModelPicker } from "./ModelPicker";
 
 type Props = { info: RuntimeInfo; proxy: string };
@@ -14,7 +14,6 @@ type Extras = { anticheat: string[]; showFps: boolean | null; proton: api.Proton
 
 const keyOf = (t: { kind: Kind; appid: string }) => `${t.kind}:${t.appid}`;
 let lastKey = ""; // keep the selection while the panel is closed and reopened
-const focusable = { focusable: true, highlightOnFocus: true } as const;
 
 export function GamePanel({ info, proxy }: Props) {
   const [items, setItems] = useState<TargetItem[]>([]);
@@ -156,7 +155,6 @@ export function GamePanel({ info, proxy }: Props) {
 
   // ── render ────────────────────────────────────────────────────────────────
   const patched = Boolean(status?.patched);
-  const isShortcut = current?.kind === "shortcut";
   const shownFolder = patched ? status?.target_dir : folder || status?.suggested_dir;
   const needsFolder = !patched && !folder && !status?.suggested_dir && Boolean(status);
   const canPatch = Boolean(current && status && !busy && !needsFolder && current.installed);
@@ -165,68 +163,65 @@ export function GamePanel({ info, proxy }: Props) {
     : problem ? { color: COLORS.bad, text: problem }
     : !status ? { color: COLORS.muted, text: tr("Loading...", "Cargando...") }
     : !current.installed ? { color: COLORS.bad, text: tr("Install not found", "Instalación no encontrada") }
-    : patched && status.dll_present === false ? { color: COLORS.warn, text: tr("Patch incomplete: reinstall it", "Parche incompleto: reinstálalo") }
+    : patched && status.dll_present === false ? { color: COLORS.warn, text: tr("Incomplete: reinstall", "Incompleto: reinstala") }
     : patched ? { color: COLORS.ok, text: tr("Patched", "Parcheado") }
     : { color: COLORS.muted, text: tr("Not patched", "Sin parchear") };
 
   const proton = extras.proton ?? status?.proton ?? null;
   const protonWarn = proton && (proton.ge ? (proton.major ?? 99) < 11 : false);
   const patchLabel = busy === "patch" ? tr("Patching...", "Parcheando...")
-    : patched ? tr("Reinstall patch", "Reinstalar parche")
-    : extras.anticheat.length ? tr("Patch anyway (at your own risk)", "Parchear de todos modos (bajo tu riesgo)")
+    : patched ? tr("Reinstall", "Reinstalar")
+    : extras.anticheat.length ? tr("Patch anyway (at your own risk)", "Parchear igualmente (bajo tu riesgo)")
     : tr("Patch this game", "Parchear este juego");
+
+  const openMenu = () => {
+    if (!items.length) return;
+    showContextMenu(
+      <Menu label={tr("Choose a game", "Elige un juego")}>
+        {items.map((i) => (
+          <MenuItem key={keyOf(i)} onSelected={() => { lastKey = keyOf(i); setSelected(lastKey); }}>
+            {`${i.patched ? "● " : ""}${i.name}${i.installed ? "" : ` (${tr("not installed", "no instalado")})`}`}
+          </MenuItem>
+        ))}
+      </Menu>
+    );
+  };
 
   return (
     <>
-      <PanelSection title={tr("Game", "Juego")}>
+      <PanelSection>
+        <PanelSectionRow><Heading>{tr("Game", "Juego")}</Heading></PanelSectionRow>
         <PanelSectionRow>
-          <DropdownItem
-            layout="below"
-            label={tr("Choose a game", "Elige un juego")}
-            menuLabel={tr("Choose a game", "Elige un juego")}
-            strDefaultLabel={loading ? tr("Loading games...", "Cargando juegos...") : tr("No games", "No hay juegos")}
-            disabled={loading || items.length === 0}
-            selectedOption={selected}
-            rgOptions={items.map((i) => ({
-              data: keyOf(i),
-              label: `${i.patched ? "● " : ""}${i.name}${i.installed ? "" : ` (${tr("not installed", "no instalado")})`}`,
-            }))}
-            onChange={(o) => { lastKey = String(o.data); setSelected(lastKey); }}
-          />
+          <Tile onActivate={openMenu} disabled={loading || items.length === 0} style={{ textAlign: "left", padding: "12px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.25, wordBreak: "break-word" }}>
+                  {current ? current.name : loading ? tr("Loading games...", "Cargando juegos...") : tr("Pick a game", "Elige un juego")}
+                </div>
+                {current && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6, flexWrap: "wrap" }}>
+                    {pill && <Pill color={pill.color}>● {pill.text}</Pill>}
+                    <Chip>{current.kind === "game" ? "Steam" : tr("Non-Steam", "Fuera de Steam")}</Chip>
+                  </div>
+                )}
+                {patched && status?.variant_label && (
+                  <div style={{ fontSize: 12, color: "#98a1ad", marginTop: 6, fontWeight: 400 }}>{status.variant_label}</div>
+                )}
+              </div>
+              <FaChevronDown style={{ opacity: 0.7 }} />
+            </div>
+          </Tile>
         </PanelSectionRow>
 
-        {!current && !loading && (
+        {current && status && (patched || current.kind === "shortcut" || folder) && (
           <PanelSectionRow>
-            <Card color={COLORS.info}>{tr("Pick a game from the list. A game outside Steam: add its .exe with the button below.", "Elige un juego de la lista. Si no es de Steam, añade su .exe con el botón de abajo.")}</Card>
-          </PanelSectionRow>
-        )}
-
-        {pill && (
-          <PanelSectionRow>
-            <Field {...focusable} label={tr("Status", "Estado")} description={patched ? status?.variant_label ?? undefined : undefined}>
-              <Pill color={pill.color}>● {pill.text}</Pill>
-            </Field>
-          </PanelSectionRow>
-        )}
-
-        {current && status && (isShortcut || patched || folder) && (
-          <>
-            <PanelSectionRow>
-              <Field
-                {...focusable}
-                label={patched ? tr("Patched folder", "Carpeta parcheada") : folder ? tr("Chosen folder", "Carpeta elegida") : tr("Detected folder", "Carpeta detectada")}
-                description={needsFolder ? status.suggestion_error || tr("Choose the folder where the game .exe is.", "Elige la carpeta donde está el .exe del juego.") : undefined}
-              >
-                <Mono>{shownFolder || "—"}</Mono>
-              </Field>
-            </PanelSectionRow>
-          </>
-        )}
-        {current && status && !patched && (
-          <PanelSectionRow>
-            <ButtonItem layout="below" disabled={busy !== null} onClick={pickFolder}>
-              <IconText icon={<FaFolderOpen />}>{tr("Choose another folder", "Elegir otra carpeta")}</IconText>
-            </ButtonItem>
+            <div style={{ width: "100%", fontSize: 11.5, color: "#98a1ad" }}>
+              <div style={{ marginBottom: 2 }}>
+                {patched ? tr("Patched folder", "Carpeta parcheada") : folder ? tr("Chosen folder", "Carpeta elegida") : tr("Detected folder", "Carpeta detectada")}
+              </div>
+              <Mono>{shownFolder || "—"}</Mono>
+              {needsFolder && <div style={{ color: COLORS.warn, marginTop: 4 }}>{status.suggestion_error || tr("Choose the folder where the game .exe is.", "Elige la carpeta donde está el .exe del juego.")}</div>}
+            </div>
           </PanelSectionRow>
         )}
 
@@ -250,44 +245,64 @@ export function GamePanel({ info, proxy }: Props) {
         )}
 
         <PanelSectionRow>
-          <ButtonItem layout="below" disabled={busy !== null} onClick={addExe}
-            description={tr("Pick a game's .exe and it gets a Steam entry, needed to set launch options.", "Elige el .exe de un juego y se le crea una entrada en Steam, hace falta para las opciones de lanzamiento.")}>
-            <IconText icon={<FaPlus />}>{busy === "add" ? tr("Adding...", "Añadiendo...") : tr("Choose the .exe of a game not in the list", "Elegir el .exe de un juego que no está en la lista")}</IconText>
-          </ButtonItem>
+          <div style={{ display: "flex", gap: 8, width: "100%" }}>
+            <Tile disabled={busy !== null} onActivate={() => void addExe()} style={{ flex: 3, fontSize: 13 }}>
+              <IconText icon={<FaPlus />}>{busy === "add" ? tr("Adding...", "Añadiendo...") : tr("Add a game .exe", "Añadir .exe de un juego")}</IconText>
+            </Tile>
+            <Tile disabled={busy !== null || loading} onActivate={() => void loadItems(selected)} style={{ flex: 1 }}>
+              <IconText icon={<FaSync />}>{""}</IconText>
+            </Tile>
+          </div>
         </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem layout="below" disabled={busy !== null || loading} onClick={() => void loadItems(selected)}>
-            <IconText icon={<FaSync />}>{tr("Refresh list", "Actualizar lista")}</IconText>
-          </ButtonItem>
-        </PanelSectionRow>
+        {current && status && !patched && (
+          <PanelSectionRow>
+            <Tile disabled={busy !== null} onActivate={() => void pickFolder()} style={{ fontSize: 13 }}>
+              <IconText icon={<FaFolderOpen />}>{tr("Choose another folder", "Elegir otra carpeta")}</IconText>
+            </Tile>
+          </PanelSectionRow>
+        )}
+        {!current && !loading && (
+          <PanelSectionRow>
+            <Card color={COLORS.info}>{tr("Pick a game from the list. A game outside Steam: add its .exe with the button above.", "Elige un juego de la lista. Si no es de Steam, añade su .exe con el botón de arriba.")}</Card>
+          </PanelSectionRow>
+        )}
       </PanelSection>
 
       {current && status && (
-        <PanelSection title={tr("Upscaler", "Escalador")}>
+        <PanelSection>
+          <PanelSectionRow><Heading>{tr("Upscaler", "Escalador")}</Heading></PanelSectionRow>
           <PanelSectionRow>
-            <ModelPicker variants={info.catalog.variants} current={pickedVariant} currentLabel={patched ? status.variant_label : undefined}
-              disabled={busy !== null} onSelect={doVariant} />
-          </PanelSectionRow>
-          <PanelSectionRow>
-            <ButtonItem layout="below" disabled={!canPatch} onClick={doPatch}>
-              <span style={{ fontWeight: 700 }}><IconText icon={<FaCheck />} color={canPatch ? COLORS.ok : undefined}>{patchLabel}</IconText></span>
-            </ButtonItem>
+            <ModelPicker variants={info.catalog.variants} current={pickedVariant} disabled={busy !== null}
+              recommended={info.catalog.default_variant} onSelect={doVariant} />
           </PanelSectionRow>
           {patched && (
             <PanelSectionRow>
-              <ButtonItem layout="below" disabled={busy !== null} onClick={doUnpatch}>
-                <span style={{ fontWeight: 600 }}>
-                  <IconText icon={<FaTimes />} color={COLORS.bad}>{busy === "unpatch" ? tr("Removing...", "Quitando...") : tr("Remove patch", "Quitar parche")}</IconText>
-                </span>
-              </ButtonItem>
+              <div style={{ fontSize: 11.5, color: "#98a1ad" }}>{tr("Changing the model applies when the game is opened.", "Al cambiar el modelo se aplica al abrir el juego.")}</div>
             </PanelSectionRow>
           )}
+          <PanelSectionRow>
+            {patched ? (
+              <div style={{ display: "flex", gap: 8, width: "100%" }}>
+                <Tile tone="ghost" disabled={!canPatch} onActivate={() => void doPatch()} style={{ flex: 1 }}>
+                  <IconText icon={<FaCheck />}>{patchLabel}</IconText>
+                </Tile>
+                <Tile tone="danger" disabled={busy !== null} onActivate={() => void doUnpatch()} style={{ flex: 1 }}>
+                  <IconText icon={<FaTimes />}>{busy === "unpatch" ? tr("Removing...", "Quitando...") : tr("Remove patch", "Quitar parche")}</IconText>
+                </Tile>
+              </div>
+            ) : (
+              <Tile tone="primary" disabled={!canPatch} onActivate={() => void doPatch()} style={{ padding: "14px" }}>
+                <IconText icon={<FaCheck />}>{patchLabel}</IconText>
+              </Tile>
+            )}
+          </PanelSectionRow>
           {message && <PanelSectionRow><Card color={message.error ? COLORS.bad : COLORS.ok}>{message.text}</Card></PanelSectionRow>}
         </PanelSection>
       )}
 
       {current && patched && (
-        <PanelSection title={tr("Check it works", "Comprobar")}>
+        <PanelSection>
+          <PanelSectionRow><Heading>{tr("Check it works", "Comprobar")}</Heading></PanelSectionRow>
           <PanelSectionRow>
             <ToggleField
               label={tr("OptiScaler FPS overlay", "Overlay de FPS de OptiScaler")}
@@ -296,18 +311,20 @@ export function GamePanel({ info, proxy }: Props) {
             />
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem layout="below" disabled={busy !== null} onClick={doDiagnose}>
+            <Tile disabled={busy !== null} onActivate={() => void doDiagnose()} style={{ fontSize: 13 }}>
               <IconText icon={<FaSearch />}>{tr("Does it work? Check status", "¿Funciona? Ver estado")}</IconText>
-            </ButtonItem>
+            </Tile>
           </PanelSectionRow>
           {diagnosis && (
             <PanelSectionRow>
-              <Field {...focusable} label={tr("OptiScaler status", "Estado de OptiScaler")} description={diagnosis.note}>
+              <Card color={COLORS.info}>
+                <div style={{ fontWeight: 700, marginBottom: 4 }}>{tr("OptiScaler status", "Estado de OptiScaler")}</div>
                 <Mono>{[
                   `${tr("DX12 upscaler", "Escalador DX12")}: ${diagnosis.settings.dx12_upscaler} · GpuSupport: ${diagnosis.settings.fsr4_gpu_support} · ${tr("Model", "Modelo")}: ${diagnosis.settings.fsr4_model}`,
                   ...diagnosis.summary, ...(diagnosis.lines.length ? ["", ...diagnosis.lines] : []),
                 ].join("\n")}</Mono>
-              </Field>
+                {diagnosis.note && <div style={{ fontSize: 11.5, opacity: 0.7, marginTop: 6 }}>{diagnosis.note}</div>}
+              </Card>
             </PanelSectionRow>
           )}
         </PanelSection>

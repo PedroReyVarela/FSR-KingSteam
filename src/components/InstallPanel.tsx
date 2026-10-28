@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { ButtonItem, PanelSection, PanelSectionRow } from "@decky/ui";
-import { FaDownload, FaSync } from "react-icons/fa";
+import { PanelSection, PanelSectionRow } from "@decky/ui";
+import { FaDownload } from "react-icons/fa";
 import { install, installProgress, RuntimeInfo } from "../api";
 import { tr } from "../i18n";
-import { Card, COLORS, errorText, IconText, Pill } from "../ui";
+import { VERSION } from "../version";
+import { Card, COLORS, errorText, IconText, Pill, Tile } from "../ui";
 
-type Props = { info: RuntimeInfo | null; onChange: () => void };
-
-export function InstallPanel({ info, onChange }: Props) {
+export function useInstaller(info: RuntimeInfo | null, onChange: () => void) {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
@@ -26,11 +25,12 @@ export function InstallPanel({ info, onChange }: Props) {
   }, [busy]);
 
   const run = async () => {
+    if (busy) return;
     setBusy(true);
     setError("");
     try {
-      const result = await install(info?.default_variant ?? info?.catalog.default_variant ?? "fsr4-lite");
-      if (result.status !== "success") setError(result.message);
+      const r = await install(info?.default_variant ?? info?.catalog.default_variant ?? "fsr4-lite");
+      if (r.status !== "success") setError(r.message);
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -38,58 +38,53 @@ export function InstallPanel({ info, onChange }: Props) {
       onChange();
     }
   };
+  return { busy, progress, error, run };
+}
 
+type Props = { info: RuntimeInfo | null; installer: ReturnType<typeof useInstaller> };
+
+// top strip: state of the runtime on the left, plugin version on the right
+export function InstallPanel({ info, installer }: Props) {
   if (!info) return null;
-
+  const { busy, progress, error, run } = installer;
   const steps = [
-    tr("Press Install (downloads the AMD files, a few minutes once)", "Pulsa Instalar (descarga los archivos de AMD, unos minutos una sola vez)"),
+    tr("Press Install (downloads AMD's files, a few minutes once)", "Pulsa Instalar (descarga los archivos de AMD, unos minutos una sola vez)"),
     tr("Choose a game and an upscaler", "Elige un juego y un escalador"),
     tr("Press Patch and launch the game", "Pulsa Parchear y abre el juego"),
     tr("In the game graphics, turn on DLSS, FSR or XeSS", "En los gráficos del juego, activa DLSS, FSR o XeSS"),
   ];
-
   return (
     <PanelSection>
       <PanelSectionRow>
-        {info.installed ? (
-          <Card color={COLORS.ok}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-              <Pill color={COLORS.ok}>● {tr("Ready", "Listo")}</Pill>
-              {info.version && <span style={{ opacity: 0.8 }}>OptiScaler {info.version}</span>}
-            </div>
-            {info.default_variant_label && (
-              <div style={{ marginTop: 6, opacity: 0.85 }}>{tr("Default", "Por defecto")}: <strong>{info.default_variant_label}</strong></div>
-            )}
-          </Card>
-        ) : (
-          <Card color={COLORS.warn}>
-            <div style={{ marginBottom: 8 }}><Pill color={COLORS.warn}>● {tr("Not installed", "No instalado")}</Pill></div>
-            {steps.map((text, i) => (
-              <div key={i} style={{ display: "flex", gap: 8, marginTop: 4 }}>
-                <strong style={{ color: COLORS.warn }}>{i + 1}</strong><span>{text}</span>
-              </div>
-            ))}
-          </Card>
-        )}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <Pill color={info.installed ? COLORS.ok : COLORS.warn}>● {info.installed ? tr("Ready", "Listo") : tr("Not installed", "No instalado")}</Pill>
+            {info.installed && info.version && <span style={{ fontSize: 12, opacity: 0.75 }}>OptiScaler {info.version}</span>}
+          </div>
+          <span style={{ fontSize: 11, letterSpacing: "0.12em", color: "#7b8591" }}>v{VERSION}</span>
+        </div>
       </PanelSectionRow>
       {!info.installed && (
-        <PanelSectionRow>
-          <ButtonItem layout="below" disabled={busy} onClick={run}>
-            <IconText icon={<FaDownload />}>{busy ? progress || tr("Installing...", "Instalando...") : tr("Install OptiScaler", "Instalar OptiScaler")}</IconText>
-          </ButtonItem>
-        </PanelSectionRow>
+        <>
+          <PanelSectionRow>
+            <Card color={COLORS.warn}>
+              {steps.map((text, i) => (
+                <div key={i} style={{ display: "flex", gap: 10, marginTop: i ? 6 : 0, alignItems: "flex-start" }}>
+                  <span style={{ flex: "0 0 20px", height: 20, borderRadius: 10, background: `${COLORS.warn}33`, color: COLORS.warn, fontWeight: 800, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>{i + 1}</span>
+                  <span>{text}</span>
+                </div>
+              ))}
+            </Card>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <Tile tone="primary" disabled={busy} onActivate={() => void run()}>
+              <IconText icon={<FaDownload />}>{busy ? progress || tr("Installing...", "Instalando...") : tr("Install OptiScaler", "Instalar OptiScaler")}</IconText>
+            </Tile>
+          </PanelSectionRow>
+        </>
       )}
-      {info.installed && busy && (
-        <PanelSectionRow><Card color={COLORS.info}>{progress || tr("Reinstalling...", "Reinstalando...")}</Card></PanelSectionRow>
-      )}
+      {info.installed && busy && <PanelSectionRow><Card color={COLORS.info}>{progress || tr("Reinstalling...", "Reinstalando...")}</Card></PanelSectionRow>}
       {error && <PanelSectionRow><Card color={COLORS.bad}>{error}</Card></PanelSectionRow>}
-      {info.installed && !busy && (
-        <PanelSectionRow>
-          <ButtonItem layout="below" onClick={run}>
-            <IconText icon={<FaSync />}>{tr("Reinstall runtime", "Reinstalar runtime")}</IconText>
-          </ButtonItem>
-        </PanelSectionRow>
-      )}
     </PanelSection>
   );
 }

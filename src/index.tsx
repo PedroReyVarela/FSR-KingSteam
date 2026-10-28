@@ -4,8 +4,7 @@ import { MdOutlineAutoAwesomeMotion } from "react-icons/md";
 import { RuntimeInfo, runtimeStatus, setLanguage } from "./api";
 import { AdvancedPanel } from "./components/AdvancedPanel";
 import { GamePanel } from "./components/GamePanel";
-import { Header } from "./components/Header";
-import { InstallPanel } from "./components/InstallPanel";
+import { InstallPanel, useInstaller } from "./components/InstallPanel";
 import { LANGUAGE } from "./i18n";
 
 function Main() {
@@ -24,13 +23,13 @@ function Main() {
   }, []);
 
   useEffect(() => { void refresh(); }, [refresh]);
+  const installer = useInstaller(info, refresh);
 
   return (
     <>
-      <Header />
-      <InstallPanel info={info} onChange={refresh} />
+      <InstallPanel info={info} installer={installer} />
       {info?.installed && <GamePanel info={info} proxy={proxy} />}
-      {info?.installed && <AdvancedPanel info={info} proxy={proxy} onProxy={setProxy} onChange={refresh} />}
+      {info?.installed && <AdvancedPanel info={info} proxy={proxy} onProxy={setProxy} onChange={refresh} installer={installer} />}
     </>
   );
 }
