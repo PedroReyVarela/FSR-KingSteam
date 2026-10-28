@@ -39,10 +39,10 @@ def check_directory(directory: str, home: Path) -> Path:
         raise FileNotFoundError(tr(f"The folder does not exist: {directory}", f"La carpeta no existe: {directory}"))
     if not path.is_dir():
         raise NotADirectoryError(tr(f"Not a folder: {directory}", f"No es una carpeta: {directory}"))
-    if not os.access(path, os.W_OK | os.X_OK):
-        raise PermissionError(tr(f"No write permission in {directory}", f"Sin permiso de escritura en {directory}"))
     if is_unsafe_root(path, home):
         raise ValueError(tr(f"Folder too generic to patch: {path}", f"Carpeta demasiado genérica para parchear: {path}"))
+    if not os.access(path, os.W_OK | os.X_OK):
+        raise PermissionError(tr(f"No write permission in {directory}", f"Sin permiso de escritura en {directory}"))
     return path
 
 
