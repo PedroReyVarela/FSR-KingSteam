@@ -112,7 +112,12 @@ export function GamePanel({ info, proxy }: Props) {
   });
 
   const doVariant = (next: string) => {
-    if (!status?.patched) { setVariantChoice(next); return; }
+    if (!status?.patched) {
+      setVariantChoice(next);
+      // the model picked for a new patch is remembered as the default for the next games
+      if (!next.startsWith("community:")) void api.setDefaultVariant(next).catch(() => undefined);
+      return;
+    }
     void guard("variant", async () => {
       if (!current) return;
       const r = await api.setVariant(current.kind, current.appid, next);
