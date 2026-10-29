@@ -36,8 +36,8 @@
     "es": "FSR 4.1.2 | INT8 Lite (oficial)"
    },
    "hint": {
-    "en": "INT8 Lite model made for handheld APUs (Ally X included). The best fit for the 890M.",
-    "es": "Modelo INT8 Lite pensado para APUs de portátil (Ally X incluida). Es el que mejor encaja con la 890M."
+    "en": "INT8 Lite for handhelds. The best fit for the 890M.",
+    "es": "INT8 Lite para portátiles. El que mejor encaja con la 890M."
    },
    "config_overrides": {
     "Upscalers.Dx12Upscaler": "ffx",
@@ -55,8 +55,8 @@
     "es": "FSR 4.1.1 | INT8 (oficial)"
    },
    "hint": {
-    "en": "Official AMD 4.1.1 DLL with the full INT8 model. Better quality than Lite, higher cost. Untested on the 890M.",
-    "es": "DLL oficial de AMD 4.1.1 con el modelo INT8 completo. Más calidad que Lite, más coste. Sin probar en la 890M."
+    "en": "Full INT8 model. More quality than Lite, more cost. Untested on the 890M.",
+    "es": "Modelo INT8 completo. Más calidad que Lite, más coste. Sin probar en la 890M."
    },
    "config_overrides": {
     "Upscalers.Dx12Upscaler": "ffx",
@@ -74,8 +74,8 @@
     "es": "XeSS (Intel, vía OptiScaler)"
    },
    "hint": {
-    "en": "XeSS 2 through the generic path (DP4a) on AMD. The game needs DLSS, FSR or XeSS enabled. Usually costs more than FSR on the 890M.",
-    "es": "XeSS 2 con la ruta genérica (DP4a) en AMD. Hace falta que el juego tenga DLSS, FSR o XeSS activado. Suele costar más que FSR en la 890M."
+    "en": "XeSS 2 (DP4a). The game needs DLSS, FSR or XeSS on. Costs more than FSR.",
+    "es": "XeSS 2 (DP4a). El juego necesita DLSS, FSR o XeSS activo. Cuesta más que FSR."
    },
    "config_overrides": {
     "Upscalers.Dx12Upscaler": "xess",
@@ -89,50 +89,50 @@
   {
    "id": "dxgi.dll",
    "hint": {
-    "en": "Works for most DX12 games. Default.",
-    "es": "Funciona en la mayoría de juegos DX12. Por defecto."
+    "en": "Works in most DX12 games. Default.",
+    "es": "Sirve en la mayoría de juegos DX12. Por defecto."
    }
   },
   {
    "id": "winmm.dll",
    "hint": {
-    "en": "Use when dxgi.dll conflicts with an existing game file.",
+    "en": "Use it if dxgi.dll clashes with a game file.",
     "es": "Úsala si dxgi.dll choca con un archivo del juego."
    }
   },
   {
    "id": "version.dll",
    "hint": {
-    "en": "Common fallback; works well with many launchers.",
-    "es": "Alternativa común; funciona con muchos lanzadores."
+    "en": "Common fallback for many launchers.",
+    "es": "Alternativa común con muchos lanzadores."
    }
   },
   {
    "id": "dbghelp.dll",
    "hint": {
-    "en": "Use for debug helper hook paths.",
+    "en": "For debug helper hook paths.",
     "es": "Para rutas de enganche de depuración."
    }
   },
   {
    "id": "winhttp.dll",
    "hint": {
-    "en": "Use when other DLL names conflict.",
-    "es": "Úsala si otros nombres de DLL dan conflicto."
+    "en": "Use it if other names clash.",
+    "es": "Úsala si otros nombres chocan."
    }
   },
   {
    "id": "wininet.dll",
    "hint": {
-    "en": "Use when other DLL names conflict.",
-    "es": "Úsala si otros nombres de DLL dan conflicto."
+    "en": "Use it if other names clash.",
+    "es": "Úsala si otros nombres chocan."
    }
   },
   {
    "id": "OptiScaler.asi",
    "hint": {
-    "en": "For ASI loaders. Requires an ASI loader already installed in the game.",
-    "es": "Para cargadores ASI. Requiere un cargador ASI ya instalado en el juego."
+    "en": "For ASI loaders already in the game.",
+    "es": "Para cargadores ASI ya instalados en el juego."
    }
   }
  ]

@@ -311,7 +311,7 @@ export function GamePanel({ info, proxy }: Props) {
           <PanelSectionRow>
             <ToggleField
               label={tr("OptiScaler FPS overlay", "Overlay de FPS de OptiScaler")}
-              description={tr("Large overlay with FPS and the upscale ratio (render → output resolution). Useful for comparing models.", "Overlay grande con FPS y la relación de escalado (resolución interna → salida). Útil para comparar modelos.")}
+              description={tr("Large overlay: FPS and render → output resolution.", "Overlay grande: FPS y resolución interna → salida.")}
               checked={Boolean(extras.showFps)} disabled={busy !== null} onChange={(v) => void doFps(v)}
             />
           </PanelSectionRow>

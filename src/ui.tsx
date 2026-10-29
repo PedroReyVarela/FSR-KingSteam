@@ -25,11 +25,12 @@ export function Chip({ children, color = COLORS.muted }: { children: ReactNode; 
   );
 }
 
-export function Card({ color, children }: { color: string; children: ReactNode }) {
+// plain card, no coloured side stripe (the colour argument is kept so the callers do not change)
+export function Card({ children }: { color?: string; children: ReactNode }) {
   return (
     <div style={{
       padding: "10px 12px", borderRadius: 10, background: SURFACE, border: `1px solid ${BORDER}`,
-      borderLeft: `4px solid ${color}`, fontSize: 13, lineHeight: 1.45, wordBreak: "break-word", width: "100%", boxSizing: "border-box",
+      fontSize: 13, lineHeight: 1.45, wordBreak: "break-word", width: "100%", boxSizing: "border-box",
     }}>{children}</div>
   );
 }

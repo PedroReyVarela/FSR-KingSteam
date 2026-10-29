@@ -27,7 +27,7 @@ export function ModelPicker({ variants, current, disabled, recommended, onSelect
 
   const entries = [
     ...variants.map((v) => ({ id: v.id, title: v.label, hint: v.hint })),
-    ...community.map((c) => ({ id: `community:${c.id}`, title: c.name, hint: `${c.note} SHA-256 ${c.sha256.slice(0, 12)}…`.trim() })),
+    ...community.map((c) => ({ id: `community:${c.id}`, title: c.name, hint: c.note })),
   ];
   const chosen = entries.find((e) => e.id === current) ?? null;
 
