@@ -247,7 +247,7 @@ class Service:
                 community = self.catalog.community_entry(variant[len("community:"):])
                 if community is None:
                     return fail(tr("That community DLL was not found.", "No encuentro esa DLL de comunidad."))
-                base = COMMUNITY_BASE_VARIANT
+                base = community.get("base") or COMMUNITY_BASE_VARIANT
             if base not in self.catalog.variants:
                 return fail(tr(f"Unknown variant: {variant}", f"Variante desconocida: {variant}"))
             patcher.set_variant(folder, self.runtime.root, base, self.catalog.variants, community)

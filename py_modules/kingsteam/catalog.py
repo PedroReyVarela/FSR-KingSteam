@@ -57,8 +57,10 @@ class Catalog:
                 if folder.is_symlink() or dll.is_symlink() or not dll.is_file():
                     continue
                 info = read_json(folder / "info.json")
+                base = info.get("base")  # which FSR4 preset the DLL is driven by (info.json "base": "fsr4-lite")
                 found.append({"id": f"{origin}/{folder.name}", "name": str(info.get("name") or folder.name),
-                              "note": str(info.get("note") or ""), "path": dll})
+                              "note": str(info.get("note") or ""), "path": dll,
+                              "base": base if base in self.variants else COMMUNITY_BASE_VARIANT})
         return found
 
     def community_entry(self, entry_id: str) -> dict | None:
