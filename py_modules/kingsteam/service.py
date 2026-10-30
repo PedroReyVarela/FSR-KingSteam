@@ -53,7 +53,6 @@ class Service:
         self.home = Path(home)
         self.catalog = Catalog(plugin_dir, self.home)
         self.runtime = Runtime(plugin_dir, data_dir, self.catalog, self.home)
-        self.catalog.sdk_dir = self.runtime.root / "sdk"
         self.registry_path = self.home / ".config" / "fsr-kingsteam" / "targets.json"
 
     # ── registry: where each target was patched (shortcuts have no fixed install dir) ──

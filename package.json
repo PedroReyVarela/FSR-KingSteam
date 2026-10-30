@@ -1,6 +1,6 @@
 {
   "name": "fsr-kingsteam",
-  "version": "2.0.4-test.2",
+  "version": "2.0.4",
   "description": "Installs OptiScaler and applies FSR 4 (INT8 Lite) or XeSS to Steam and non-Steam games.",
   "type": "module",
   "scripts": {

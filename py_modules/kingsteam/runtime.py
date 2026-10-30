@@ -106,10 +106,7 @@ class Runtime:
         if process.returncode != 0:
             raise RuntimeError(tr("The AMD DLLs could not be downloaded: ", "No se pudieron descargar las DLL de AMD: ") + " | ".join(tail[-3:]))
 
-    # ── AMD's FSR SDK upscaler DLL (4.1.2 with the Lite model inside): downloaded on the device ──
-    def sdk_folder(self) -> Path:
-        return self.root / "sdk" / "fsr412-lite"
-
+    # ── AMD's FSR SDK upscaler DLL (4.1.2, the Lite model inside): downloaded on the device ──
     async def _fetch_sdk(self, destination: Path) -> None:
         script = self.plugin_dir / "scripts" / "fetch_assets.py"
         env = os.environ.copy()
@@ -124,31 +121,33 @@ class Runtime:
             raise RuntimeError(output.decode("utf-8", errors="replace").strip()[-300:])
 
     async def ensure_sdk(self) -> None:
-        """Put AMD's FSR SDK DLL next to the runtime, once. Any failure only logs: the rest keeps working."""
+        """Swap the runtime's FSR upscaler DLL (4.1.1) for AMD's SDK one (4.1.2), once and in place.
+        Any failure only logs: the 4.1.1 DLL keeps working exactly as before."""
         try:
             asset = self.catalog.assets.get("fsr_sdk")
             if not asset or self.info() is None:
                 return
-            folder = self.sdk_folder()
-            dll = folder / "amd_fidelityfx_upscaler_dx12.dll"
-            if dll.is_file() and sha256_file(dll).lower() == asset["sha256"].lower():
+            want = asset["sha256"].lower()
+            target = self.root / UPSCALER
+            if target.is_file() and sha256_file(target).lower() == want:
                 return
             scratch = self.home / ".cache" / "fsr-kingsteam-tmp"
             scratch.mkdir(parents=True, exist_ok=True)
             download = scratch / asset["name"]
             try:
                 await self._fetch_sdk(download)
-                if sha256_file(download).lower() != asset["sha256"].lower():
+                if sha256_file(download).lower() != want:
                     raise RuntimeError("the FSR SDK DLL does not match its pinned hash")
-                folder.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(download), str(dll))
+                staged = target.with_name(target.name + ".new")
+                shutil.copy2(download, staged)
+                os.replace(staged, target)
             finally:
                 download.unlink(missing_ok=True)
-            write_json(folder / "info.json", {
-                "name": tr("FSR 4.1.2 | INT8 Lite (AMD SDK)", "FSR 4.1.2 | INT8 Lite (SDK de AMD)"),
-                "base": "fsr4-lite",
-                "note": tr("AMD's 4.1.2 DLL with the Lite model inside. Untested on the 890M.",
-                           "DLL 4.1.2 de AMD con el Lite incluido. Sin probar en la 890M.")})
+            data = read_json(self.root / "runtime.json")
+            files = dict(data.get("files") or {})
+            files[UPSCALER] = want
+            data.update({"files": files, "upscaler": asset.get("version"), "upscaler_sha256": want})
+            write_json(self.root / "runtime.json", data)
         except Exception as exc:  # noqa: BLE001
             log.warning("FSR SDK DLL not available: %s", exc)
 

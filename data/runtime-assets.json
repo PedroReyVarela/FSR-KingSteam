@@ -58,8 +58,8 @@
   },
   "fsr4-int8": {
    "label": {
-    "en": "FSR 4.1.1 | INT8 (official)",
-    "es": "FSR 4.1.1 | INT8 (oficial)"
+    "en": "FSR 4 | INT8 (official)",
+    "es": "FSR 4 | INT8 (oficial)"
    },
    "hint": {
     "en": "Full INT8 model. More quality than Lite, more cost. Untested on the 890M.",
