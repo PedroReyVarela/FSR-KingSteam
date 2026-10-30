@@ -106,6 +106,52 @@ class Runtime:
         if process.returncode != 0:
             raise RuntimeError(tr("The AMD DLLs could not be downloaded: ", "No se pudieron descargar las DLL de AMD: ") + " | ".join(tail[-3:]))
 
+    # ── AMD's FSR SDK upscaler DLL (4.1.2 with the Lite model inside): downloaded on the device ──
+    def sdk_folder(self) -> Path:
+        return self.root / "sdk" / "fsr412-lite"
+
+    async def _fetch_sdk(self, destination: Path) -> None:
+        script = self.plugin_dir / "scripts" / "fetch_assets.py"
+        env = os.environ.copy()
+        env.pop("LD_LIBRARY_PATH", None)
+        if "LD_LIBRARY_PATH_ORIG" in env:
+            env["LD_LIBRARY_PATH"] = env["LD_LIBRARY_PATH_ORIG"]
+        process = await asyncio.create_subprocess_exec(
+            "/usr/bin/python3", "-I", str(script), "--sdk-to", str(destination),
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT, env=env)
+        output, _ = await asyncio.wait_for(process.communicate(), timeout=900)
+        if process.returncode != 0:
+            raise RuntimeError(output.decode("utf-8", errors="replace").strip()[-300:])
+
+    async def ensure_sdk(self) -> None:
+        """Put AMD's FSR SDK DLL next to the runtime, once. Any failure only logs: the rest keeps working."""
+        try:
+            asset = self.catalog.assets.get("fsr_sdk")
+            if not asset or self.info() is None:
+                return
+            folder = self.sdk_folder()
+            dll = folder / "amd_fidelityfx_upscaler_dx12.dll"
+            if dll.is_file() and sha256_file(dll).lower() == asset["sha256"].lower():
+                return
+            scratch = self.home / ".cache" / "fsr-kingsteam-tmp"
+            scratch.mkdir(parents=True, exist_ok=True)
+            download = scratch / asset["name"]
+            try:
+                await self._fetch_sdk(download)
+                if sha256_file(download).lower() != asset["sha256"].lower():
+                    raise RuntimeError("the FSR SDK DLL does not match its pinned hash")
+                folder.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(download), str(dll))
+            finally:
+                download.unlink(missing_ok=True)
+            write_json(folder / "info.json", {
+                "name": tr("FSR 4.1.2 | INT8 Lite (AMD SDK)", "FSR 4.1.2 | INT8 Lite (SDK de AMD)"),
+                "base": "fsr4-lite",
+                "note": tr("AMD's 4.1.2 DLL with the Lite model inside. Untested on the 890M.",
+                           "DLL 4.1.2 de AMD con el Lite incluido. Sin probar en la 890M.")})
+        except Exception as exc:  # noqa: BLE001
+            log.warning("FSR SDK DLL not available: %s", exc)
+
     # ── build ──────────────────────────────────────────────────────────────────
     def _build(self, default_variant: str) -> dict:
         assets = self.catalog.assets
@@ -153,6 +199,8 @@ class Runtime:
         try:
             self._progress(tr("Checking files", "Comprobando archivos"))
             await self._ensure_amd_dlls()
-            return await asyncio.to_thread(self._build, variant)
+            info = await asyncio.to_thread(self._build, variant)
+            await self.ensure_sdk()
+            return info
         finally:
             self.progress = None

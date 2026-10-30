@@ -19,6 +19,7 @@ class Catalog:
         self.home = Path(home)
         self.assets = read_json(self.plugin_dir / "data" / "runtime-assets.json")
         self.variants: dict = self.assets.get("variants", {})
+        self.sdk_dir: Path | None = None  # set by the service: where the downloaded FSR SDK DLL lives
         self._sha_cache: dict = {}
 
     def variant_label(self, variant: str | None) -> str | None:
@@ -45,7 +46,10 @@ class Catalog:
 
     # community DLLs: bundled with the plugin (community/) or dropped by the user in ~/FSR4-custom
     def _roots(self) -> list[tuple[str, Path]]:
-        return [("plugin", self.plugin_dir / "community"), ("user", self.home / "FSR4-custom")]
+        roots = [("plugin", self.plugin_dir / "community"), ("user", self.home / "FSR4-custom")]
+        if self.sdk_dir is not None:
+            roots.append(("sdk", self.sdk_dir))
+        return roots
 
     def community(self) -> list[dict]:
         found = []

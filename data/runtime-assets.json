@@ -23,6 +23,13 @@
    }
   }
  },
+ "fsr_sdk": {
+  "name": "amd_fidelityfx_upscaler_dx12.sdk-4.1.2.dll",
+  "version": "4.1.2 (FSR SDK 2.4.0)",
+  "url": "https://raw.githubusercontent.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/v2.4.0/Kits/FidelityFX/signedbin/amd_fidelityfx_upscaler_dx12.dll",
+  "sha256": "aad4fccccb29084a655f9a4f9f613bd22c8c03fb4a0f8840148cc6543b4ccace",
+  "size": 57664272
+ },
  "optipatcher": {
   "name": "OptiPatcher_rolling.asi",
   "version": "rolling-fetched-2026-10-27",

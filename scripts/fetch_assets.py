@@ -107,9 +107,22 @@ def fetch(amd_package=None, skip_amd=False):
     print("All pinned runtime assets verified.")
 
 
+def fetch_sdk(destination):
+    """AMD's FSR SDK upscaler DLL, straight from AMD's repository, to one file (hash-checked)."""
+    asset = json.loads(MANIFEST.read_text())["fsr_sdk"]
+    destination = Path(destination)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    download(asset, destination)
+    print("FSR SDK DLL verified.", flush=True)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--sdk-to", type=Path, help="Only download AMD's FSR SDK upscaler DLL to this file")
     parser.add_argument("--amd-package", type=Path, help="Reuse the exact pinned AMD installer downloaded from AMD")
     parser.add_argument("--skip-amd", action="store_true", help="Only fetch the files that go inside the ZIP")
     arguments = parser.parse_args()
-    fetch(arguments.amd_package, arguments.skip_amd)
+    if arguments.sdk_to:
+        fetch_sdk(arguments.sdk_to)
+    else:
+        fetch(arguments.amd_package, arguments.skip_amd)

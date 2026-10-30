@@ -19,6 +19,7 @@ class Plugin:
     async def _main(self):
         data_dir = Path(getattr(decky, "DECKY_PLUGIN_RUNTIME_DIR", Path(decky.HOME) / ".local" / "share" / "fsr-kingsteam"))
         self.service = Service(Path(str(decky.HOME)), Path(decky.DECKY_PLUGIN_DIR), data_dir)
+        asyncio.create_task(self.service.runtime.ensure_sdk())  # small background download, never blocks the UI
         decky.logger.info("FSR-KingSteam loaded")
 
     async def _unload(self):

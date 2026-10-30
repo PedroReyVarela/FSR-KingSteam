@@ -23,5 +23,7 @@ the full text.
   texts are in `licenses/`.
 - AMD FSR 4 driver DLLs (`amdxcffx64.dll`, `amdvkffx64.dll`): NOT redistributed. The plugin downloads
   AMD's driver package on the user's device, extracts these two files and checks their SHA-256.
+- AMD FSR SDK 2.4.0 upscaler DLL (4.1.2, signed by AMD): NOT redistributed. The plugin downloads it on the
+  device from AMD's FidelityFX-SDK repository (tag v2.4.0) and checks its SHA-256.
 - Community FSR4 DLLs in `community/` are redistributed as provided by their authors; each folder has
   an `info.json` describing it.
